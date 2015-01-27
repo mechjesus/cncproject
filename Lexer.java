@@ -96,7 +96,7 @@ public class Lexer {
                 return Token.commaTok;
                 
             case ';': ch = nextChar();
-                return Token.semicolonTo;
+                return Token.semicolonTok;
                 
             case '(': ch = nextChar();
                 return Token.leftParenTok;
