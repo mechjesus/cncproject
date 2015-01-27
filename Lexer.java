@@ -85,6 +85,30 @@ public class Lexer {
             
             case '+': ch = nextChar();
                 return Token.plusTok;
+                
+            case '-': ch = nextChar();
+                return Token.minusTok;
+                
+            case '*': ch = nextChar();
+                return Token.multiplyTok;
+                
+            case ',': ch = nextChar();
+                return Token.commaTok;
+                
+            case ';': ch = nextChar();
+                return Token.semicolonTo;
+                
+            case '(': ch = nextChar();
+                return Token.leftParenTok;
+                
+            case ')': ch = nextChar();
+                return Token.rightParenTok;
+                
+            case '{': ch = nextChar();
+                return Token.leftBraceTok;
+                
+            case '}': ch = nextChar();
+                return Token.rightBraceTok;
 
                 // - * ( ) { } ; ,  student exercise
                 
@@ -94,6 +118,21 @@ public class Lexer {
             case '=':
                 return chkOpt('=', Token.assignTok,
                                    Token.eqeqTok);
+            case '<':
+                return chkOpt('<', Token.ltTok,
+                                    Token.lteqTok);
+                                    
+            case '>':
+                return chkOpt('>', Token.gtTok,
+                                    Token.gteqTok);
+                                    
+            case '!':
+                return chkOpt('!', Token.notTok,
+                                    Token.noteqTok);
+            
+            
+                                   
+           
                 // < > !  student exercise 
 
             default:  error("Illegal character " + ch); 
@@ -107,7 +146,7 @@ public class Lexer {
     }
   
     private boolean isDigit(char c) {
-        return false;  // student exercise
+        return (c>='0' && c<='9' );  // student exercise
     }
 
     private void check(char c) {
@@ -118,7 +157,14 @@ public class Lexer {
     }
 
     private Token chkOpt(char c, Token one, Token two) {
-        return null;  // student exercise
+        ch = nextChar();// student exercise
+        if (ch == c) {
+            ch = nextChar();
+            return two;
+        }
+        else {
+                return one;
+        }
     }
 
     private String concat(String set) {
