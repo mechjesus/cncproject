@@ -43,38 +43,80 @@ public class Parser {
             match(header[i]);
         match(TokenType.LeftBrace);
         // student exercise
+        Declarations decs = declarations();
+        Block b = progstatements();
+
         match(TokenType.RightBrace);
-        return null;  // student exercise
+        return new Program(decs, b);  // student exercise
     }
   
     private Declarations declarations () {
         // Declarations --> { Declaration }
-        return null;  // student exercise
+        Declarations ds = new Declarations(); // student exercise
+        while (isType()){
+            Declarations(ds);
+        }  
+        return ds;
     }
   
     private void declaration (Declarations ds) {
         // Declaration  --> Type Identifier { , Identifier } ;
         // student exercise
+        Variable v;
+        Declaration d;
+        Type t = type();
+        v = new Variable(match(TokenType.Identifier));
+        d = new Declaration(v, t);
+        ds.add(d);
+            while (isComma()) {
+                token = lexer.net();
+                v = new Variable(match(TokenType.Identifier));
+                d = new Declaration(v, t);
+                ds.add(d);
+            }
+        match(TokenType.Semicolon);
+
     }
   
     private Type type () {
         // Type  -->  int | bool | float | char 
         Type t = null;
         // student exercise
+        if (token.type().equals(TokenType.Int)) {
+            t = Type.INT;
+        }
+        else if (token.type().equals(TokenType.Bool)) {
+            t = Type BOOL;
+        }
+        else if (token.type().equals(TokenType.Char)) {
+            t = Type CHAR;
+        }
+        token = lexer.next();
+
         return t;          
     }
   
     private Statement statement() {
         // Statement --> ; | Block | Assignment | IfStatement | WhileStatement
-        Statement s = new Skip();
+        Statement s = null();
         // student exercise
+        if (token.type().equals(TokenType.Semicolon))
+            s = new Skip();
+        else if (token.type().equals(TokenType.LeftBrace))
         return s;
     }
   
     private Block statements () {
         // Block --> '{' Statements '}'
-        Block b = new Block();
         // student exercise
+        Statement s;
+        Block b = new Block();
+        match(TokenType.LeftBrace);
+        while (isStatement()) {
+            s = statement();
+            b.members.add(s);
+        }
+        match(TokenType.RightBrace);
         return b;
     }
   
