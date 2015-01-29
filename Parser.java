@@ -122,17 +122,44 @@ public class Parser {
   
     private Assignment assignment () {
         // Assignment --> Identifier = Expression ;
-        return null;  // student exercise
+        // student exercise
+        Expression source;
+        Variable target;
+        target = new Variable(match(TokenType.Identifier));
+        match(TokenType.Assignment);
+        source = expression();
+        match(TokenType.Semicolon);
+        return new Assignment(target, source);
     }
   
     private Conditional ifStatement () {
         // IfStatement --> if ( Expression ) Statement [ else Statement ]
-        return null;  // student exercise
+        // student exercise
+        Conditional con;
+        Statement s;
+        Expression test;
+        match(TokenType.If);
+        match(TokenType.LeftParen);
+        test = expression();
+        match(TokenType.RightParen);
+        s = statement();
+        if (token.type().equals(TokenType.Else)) {
+            Statement elsestate = statement();
+            con = new Conjunctional(test, s, elsestate);
+        }
+        else {
+            con = new Conjunctional(test, s);
+        }
+        return con;
     }
   
     private Loop whileStatement () {
         // WhileStatement --> while ( Expression ) Statement
-        return null;  // student exercise
+        // student exercise
+        Statement body;
+        Expression test;.While);
+        match(TokenType.LeftParen);
+        match(TokenType)
     }
 
     private Expression expression () {
