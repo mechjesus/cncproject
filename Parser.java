@@ -88,6 +88,9 @@ public class Parser {
         else if (token.type().equals(TokenType.Bool)) {
             t = Type.BOOL;
         }
+        else if (token.type().equals(TokenType.Float)) {
+            t = Type.FLOAT;
+        }
         else if (token.type().equals(TokenType.Char)) {
             t = Type.CHAR;
         }
