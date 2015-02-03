@@ -279,11 +279,11 @@ public class Parser {
             value = new IntValue (Integer.parseInt(stval));
             token = lexer.next();
         }
-        else if (token.type()equals(TokenType.FloatLiteral)) {
+        else if (token.type().equals(TokenType.FloatLiteral)) {
             value = new FloatValue(Float.parseFloat(stval));
             token = lexer.next();
         }
-        else if (token.type()equals(TokenType.CharLiteral)) {
+        else if (token.type().equals(TokenType.CharLiteral)) {
             value = new CharValue(stval.charAt(0));
             token = lexer.next();
         }
@@ -292,7 +292,7 @@ public class Parser {
             token = lexer.next();
         }
         else if (token.type().equals(TokenType.False)) {
-            value new BoolValue(false);
+            value = new BoolValue(false);
             token = lexer.next();
         }
         else error ("construction error");
@@ -309,15 +309,15 @@ public class Parser {
     }
 
     private boolean isSemicolon( ) {
-        return token.type()equals(TokenType.Semicolon);
+        return token.type().equals(TokenType.Semicolon);
     }
 
     private boolean isLeftBrace() {
-        return token.type()equals(TokenType.LeftBrace);
+        return token.type().equals(TokenType.LeftBrace);
     }
 
     private boolean isRightBrace() {
-        return token.type()equals(TokenType.RightBrace);
+        return token.type().equals(TokenType.RightBrace);
     }
 
     private boolean isStatement() {
