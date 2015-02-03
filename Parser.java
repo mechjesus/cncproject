@@ -45,7 +45,6 @@ public class Parser {
         // student exercise
         Declarations decs = declarations();
         Block b = progstatements();
-
         match(TokenType.RightBrace);
         return new Program(decs, b);  // student exercise
     }
@@ -54,7 +53,7 @@ public class Parser {
         // Declarations --> { Declaration }
         Declarations ds = new Declarations(); // student exercise
         while (isType()){
-            Declarations(ds);
+            declaration(ds);
         }  
         return ds;
     }
@@ -69,7 +68,7 @@ public class Parser {
         d = new Declaration(v, t);
         ds.add(d);
             while (isComma()) {
-                token = lexer.net();
+                token = lexer.next();
                 v = new Variable(match(TokenType.Identifier));
                 d = new Declaration(v, t);
                 ds.add(d);
@@ -129,7 +128,7 @@ public class Parser {
         Expression source;
         Variable target;
         target = new Variable(match(TokenType.Identifier));
-        match(TokenType.Assignment);
+        match(TokenType.Assign);
         source = expression();
         match(TokenType.Semicolon);
         return new Assignment(target, source);
@@ -148,10 +147,10 @@ public class Parser {
         s = statement();
         if (token.type().equals(TokenType.Else)) {
             Statement elsestate = statement();
-            con = new Conjunctional(test, s, elsestate);
+            con = new Conditional(test, s, elsestate);
         }
         else {
-            con = new Conjunctional(test, s);
+            con = new Conditional(test, s);
         }
         return con;
     }
@@ -193,7 +192,7 @@ public class Parser {
         return eq;
     }
   
-    private Expression equality () {
+    private Expression equality() {
         // Equality --> Relation [ EquOp Relation ]
         // student exercise
         Expression rel = relation();
@@ -377,7 +376,7 @@ public class Parser {
     public static void main(String args[]) {
         Parser parser  = new Parser(new Lexer(args[0]));
         Program prog = parser.program();
-        prog.display();           // display abstract syntax tree
+        prog.display(0);           // display abstract syntax tree
     } //main
 
 } // Parser
