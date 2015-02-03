@@ -34,18 +34,15 @@ class Declaration {
 // Declaration = Variable v; Type t
     Variable v;
     Type t;
-
     Declaration (Variable var, Type type) {
         v = var; 
         t = type;
-        Declaration (Variable var,Type type) {
-            v = var; t = type;
-        }
+    }
         public void display(int k) {
             System.out.print(" <" + v + ", ");
             System.out.print(t + "> ");        }
     } // declaration */
-}
+
 
 class Type {
     // Type = int | bool | char | float 
@@ -80,8 +77,8 @@ class Block extends Statement {
         System.out.print("\t");
     }
     System.out.println("Display Block (for Statements)");
-    for (int i = ); i < members.size(); i++)
-    members.get(i) display(k);
+    for (int i = 0; i < members.size(); i++)
+    members.get(i); display(k);
     }
 }
 
@@ -142,7 +139,8 @@ class Loop extends Statement {
 
 abstract class Expression {
     // Expression = Variable | Value | Binary | Unary
-    public void display(int k) {        
+    public void display(int k) {  
+        System.out.println("Display Expression Object");      
     }
 }
 
@@ -161,8 +159,9 @@ class Variable extends Expression {
     public int hashCode ( ) { return id.hashCode( ); }
     public void display(int k) {
         System.out.print("\t");
+        System.out.println("Variable " + id);
     }
-    System.out.println("Variable " + id);
+    
 }
 
 abstract class Value extends Expression {
@@ -276,7 +275,7 @@ class CharValue extends Value {
         return "" + value;
     }
     public void display(int k) {
-        for (int w = 0, w < k; ++w) {
+        for (int w = 0; w < k; ++w) {
             System.out.print("\t");
         }
         System.out.print("CharValue: ");
@@ -300,7 +299,7 @@ class FloatValue extends Value {
         if (undef)  return "undef";
         return "" + value;
     }
-    Public void display(int k) {
+    public void display(int k) {
         for (int w = 0; w < k; ++w) {
             System.out.print("\t");            
         }
@@ -317,7 +316,7 @@ class Binary extends Expression {
     Binary (Operator o, Expression l, Expression r) {
         op = o; term1 = l; term2 = r;
     } // binary
-    Public void display(int k) {
+    public void display(int k) {
         for (int w = 0; w < k; ++w) {
             System.out.print("\t");
         }
