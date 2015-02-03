@@ -86,10 +86,10 @@ public class Parser {
             t = Type.INT;
         }
         else if (token.type().equals(TokenType.Bool)) {
-            t = Type BOOL;
+            t = Type.BOOL;
         }
         else if (token.type().equals(TokenType.Char)) {
-            t = Type CHAR;
+            t = Type.CHAR;
         }
         token = lexer.next();
 
@@ -98,7 +98,7 @@ public class Parser {
   
     private Statement statement() {
         // Statement --> ; | Block | Assignment | IfStatement | WhileStatement
-        Statement s = null();
+        Statement s = null;
         // student exercise
         if (token.type().equals(TokenType.Semicolon))
             s = new Skip();
