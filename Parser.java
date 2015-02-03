@@ -157,29 +157,61 @@ public class Parser {
         // WhileStatement --> while ( Expression ) Statement
         // student exercise
         Statement body;
-        Expression test;.While);
+        Expression test;
+        match(TokenType.While);
         match(TokenType.LeftParen);
-        match(TokenType)
+        test = expression();
+        match(TokenType.RightParen);
+        body = statement();
+        return new Loop(test, body);
     }
 
     private Expression expression () {
         // Expression --> Conjunction { || Conjunction }
-        return null;  // student exercise
+        // student exercise
+        Expression c = conjunction();
+        while (token.type().equals(TokenType.Or)) {
+            Operator op = new Operator(match(token.type()));
+            Expression e = expression();
+            c = new Binary(op, c, e);
+        }
+        return c;
     }
   
     private Expression conjunction () {
         // Conjunction --> Equality { && Equality }
-        return null;  // student exercise
+        // student exercise
+        Expression eq = equality();
+        while (token.type().equals(TokenType.And)) {
+            Operator op = new Operator (match(token.type()));
+            Expression c = conjunction();
+            eq = new Binary(op, eq, c);
+        }
+        return eq;
     }
   
     private Expression equality () {
         // Equality --> Relation [ EquOp Relation ]
-        return null;  // student exercise
+        // student exercise
+        Expression rel = relation();
+        while (isEqualityOp()) {
+            Operator op = new Operator(match(token.type()));
+            Expression re12 = relation();
+            rel = new Binary(op, rel, rel2);
+        }
+        return rel;
     }
 
     private Expression relation (){
         // Relation --> Addition [RelOp Addition] 
-        return null;  // student exercise
+        // student exercise
+        Expression a = addition();
+        while (isRelationalOp()); {
+            Operator op = new Operator(match(token.type()));
+            Expression a2 = addition();
+            a = new Binary(op, a, a2);
+        }
+        return a;
     }
   
     private Expression addition () {
@@ -237,10 +269,62 @@ public class Parser {
     }
 
     private Value literal( ) {
-        return null;  // student exercise
+         // student exercise
+        Value value = null;
+        String stval = token.value();
+        if (token.type().equals(TokenType.IntLiteral)) {
+            value = new IntValue (Integer.parseInt(stval));
+            token = lexer.next();
+        }
+        else if (token.type()equals(TokenType.FloatLiteral)) {
+            value = new FloatValue(Float.parseFloat(stval));
+            token = lexer.next();
+        }
+        else if (token.type()equals(TokenType.CharLiteral)) {
+            value = new CharValue(stval.charAt(0));
+            token = lexer.next();
+        }
+        else if (token.type().equals(TokenType.True)) {
+            value = new BoolValue(true);
+            token = lexer.next();
+        }
+        else if (token.type().equals(TokenType.False)) {
+            value new BoolValue(false);
+            token = lexer.next();
+        }
+        else error ("construction error");
+        return value;
+    }
+
+    private boolean isBooleanOp() {
+        return token.type().equals(TokenType.And) ||
+        token.type().equals(TokenType.Or);
+    }
+
+    private boolean isComma( ) {
+        return token.type().equals(TokenType.Comma);
+    }
+
+    private boolean isSemicolon( ) {
+        return token.type()equals(TokenType.Semicolon);
+    }
+
+    private boolean isLeftBrace() {
+        return token.type()equals(TokenType.LeftBrace);
+    }
+
+    private boolean isRightBrace() {
+        return token.type()equals(TokenType.RightBrace);
+    }
+
+    private boolean isStatement() {
+        return isSemicolon() ||
+        isLeftBrace() ||
+        token.type().equals(TokenType.If) ||
+        token.type().equals(TokenType.While) ||
+        token.type().equals(TokenType.Identifier);
     }
   
-
     private boolean isAddOp( ) {
         return token.type().equals(TokenType.Plus) ||
                token.type().equals(TokenType.Minus);
