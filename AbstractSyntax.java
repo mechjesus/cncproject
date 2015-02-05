@@ -12,7 +12,14 @@ class Program {
         decpart = d;
         body = b;
     }
-
+    public void display(int k) {
+        for (int w = 0; w < k; ++w) {
+            System.out.print("\t");
+        }
+        System.out.println("Program (abstract syntax:)");
+        decpart.display(++k);
+        body.display(k);
+    }
 }
 
 class Declarations extends ArrayList<Declaration> {
@@ -20,6 +27,10 @@ class Declarations extends ArrayList<Declaration> {
     // (a list of declarations d1, d2, ..., dn)
     public void display(int k) {
         for (int w = 0; w <k; ++w) {
+            System.out.print("\t");
+        }
+        System.out.println("Declarations: ");
+        for (int w = 0; w < k; ++w) {
             System.out.print("\t");
         }
         System.out.print("Declarations = {");
@@ -134,6 +145,13 @@ class Loop extends Statement {
     Loop (Expression t, Statement b) {
         test = t; body = b;
     }
+    public void display(int k) {
+        for(int w = 0; w < k; ++w) {
+            System.out.print("\t");
+        }
+        test.display(++k);
+        body.display(k);
+    }
     
 }
 
@@ -158,7 +176,9 @@ class Variable extends Expression {
     }
     public int hashCode ( ) { return id.hashCode( ); }
     public void display(int k) {
-        System.out.print("\t");
+        for (int w = 0; w < k; ++w) {
+            System.out.print("\t");
+        }
         System.out.println("Variable " + id);
     }
     
@@ -493,5 +513,7 @@ class Operator {
     final static public Operator boolMap (String op) {
         return map (boolMap, op);
     }
-
+    public void display(int k) {
+        System.out.println(val);
+    }
 }
