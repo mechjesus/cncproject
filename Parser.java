@@ -1,502 +1,390 @@
-// Abstract syntax for the language C++Lite,
-// exactly as it appears in Appendix B.
-
 import java.util.*;
 
-class Program {
-    // Program = Declarations decpart ; Block body
-    Declarations decpart;
-    Block body;
-
-    Program (Declarations d, Block b) {
-        decpart = d;
-        body = b;
+public class Parser {
+    // Recursive descent parser that inputs a C++Lite program and 
+    // generates its abstract syntax.  Each method corresponds to
+    // a concrete syntax grammar rule, which appears as a comment
+    // at the beginning of the method.
+  
+    Token token;          // current token from the input stream
+    Lexer lexer;
+  
+    public Parser(Lexer ts) { // Open the C++Lite source program
+        lexer = ts;                          // as a token stream, and
+        token = lexer.next();            // retrieve its first Token
     }
+  
+    private String match (TokenType t) {
+        String value = token.value();
+        if (token.type().equals(t))
+            token = lexer.next();
+        else
+            error(t);
+        return value;
+    }
+  
+    private void error(TokenType tok) {
+        System.err.println("Syntax error: expecting: " + tok 
+                           + "; saw: " + token);
+        System.exit(1);
+    }
+  
+    private void error(String tok) {
+        System.err.println("Syntax error: expecting: " + tok 
+                           + "; saw: " + token);
+        System.exit(1);
+    }
+  
+    public Program program() {
+        // Program --> void main ( ) '{' Declarations Statements '}'
+        TokenType[ ] header = {TokenType.Int, TokenType.Main,
+                          TokenType.LeftParen, TokenType.RightParen};
+        for (int i=0; i<header.length; i++)   // bypass "int main ( )"
+            match(header[i]);
+        match(TokenType.LeftBrace);
+        // student exercise
+        Declarations decs = declarations();
+        Block b = statements();
+        match(TokenType.RightBrace);
+        return new Program(decs, b);  // student exercise
+    }
+  
+    private Declarations declarations () {
+        // Declarations --> { Declaration }
+        Declarations ds = new Declarations(); // student exercise
+        while (isType()){
+            declaration(ds);
+        }  
+        return ds;
+    }
+  
+    private void declaration (Declarations ds) {
+        // Declaration  --> Type Identifier { , Identifier } ;
+        // student exercise
+        Variable v;
+        Declaration d;
+        Type t = type();
+        v = new Variable(match(TokenType.Identifier));
+        d = new Declaration(v, t);
+        ds.add(d);
+            while (isComma()) {
+                token = lexer.next();
+                v = new Variable(match(TokenType.Identifier));
+                d = new Declaration(v, t);
+                ds.add(d);
+            }
+        match(TokenType.Semicolon);
 
-}
-
-class Declarations extends ArrayList<Declaration> {
-    // Declarations = Declaration*
-    // (a list of declarations d1, d2, ..., dn)
-    public void display(int k) {
-        for (int w = 0; w <k; ++w) {
-            System.out.print("\t");
+    }
+  
+    private Type type () {
+        // Type  -->  int | bool | float | char 
+        Type t = null;
+        // student exercise
+        if (token.type().equals(TokenType.Int)) {
+            t = Type.INT;
         }
-        System.out.print("Declarations = {");
-        for (int i = 0; i < size(); i++)
-            get(i).display(k);
-        System.out.println("}");
-    }
-
-}
-
-class Declaration {
-// Declaration = Variable v; Type t
-    Variable v;
-    Type t;
-    Declaration (Variable var, Type type) {
-        v = var; 
-        t = type;
-    }
-        public void display(int k) {
-            System.out.print(" <" + v + ", ");
-            System.out.print(t + "> ");        }
-    } // declaration */
-
-
-class Type {
-    // Type = int | bool | char | float 
-    final static Type INT = new Type("int");
-    final static Type BOOL = new Type("bool");
-    final static Type CHAR = new Type("char");
-    final static Type FLOAT = new Type("float");
-    // final static Type UNDEFINED = new Type("undef");
-    
-    private String id;
-
-    private Type (String t) { id = t; }
-
-    public String toString ( ) { return id; }
-}
-
-abstract class Statement {
-    // Statement = Skip | Block | Assignment | Conditional | Loop
-    public void display(int k) {
+        else if (token.type().equals(TokenType.Bool)) {
+            t = Type.BOOL;
         }
-}
-
-class Skip extends Statement {
-}
-
-class Block extends Statement {
-    // Block = Statement*
-    //         (a Vector of members)
-    public ArrayList<Statement> members = new ArrayList<Statement>();
-    public void display(int k) {
-        for (int w = 0; w < k; ++w) {
-        System.out.print("\t");
-    }
-    System.out.println("Display Block (for Statements)");
-    for (int i = 0; i < members.size(); i++)
-    members.get(i); display(k);
-    }
-}
-
-class Assignment extends Statement {
-    // Assignment = Variable target; Expression source
-    Variable target;
-    Expression source;
-
-    Assignment (Variable t, Expression e) {
-        target = t;
-        source = e;
-    }
-    public void display(int k) {
-        for (int w = 0; w < k; ++w) {   
-            System.out.print("\t");         
+        else if (token.type().equals(TokenType.Float)) {
+            t = Type.FLOAT;
         }
-        System.out.println("Assignment :");
-        target.display(++k);
-        source.display(k);
-    }
-
-}
-
-class Conditional extends Statement {
-// Conditional = Expression test; Statement thenbranch, elsebranch
-    Expression test;
-    Statement thenbranch, elsebranch;
-    // elsebranch == null means "if... then"
-    
-    Conditional (Expression t, Statement tp) {
-        test = t; thenbranch = tp; elsebranch = new Skip( );
-    }
-    
-    Conditional (Expression t, Statement tp, Statement ep) {
-        test = t; thenbranch = tp; elsebranch = ep;
-    }
-    public void display(int k) {
-        for (int w = 0; w < k; ++w); {
-            System.out.print("\t");
+        else if (token.type().equals(TokenType.Char)) {
+            t = Type.CHAR;
         }
-        test.display(++k);
-        thenbranch.display(k);
-        elsebranch.display(k);
-    }
-    
-}
+        token = lexer.next();
 
-class Loop extends Statement {
-// Loop = Expression test; Statement body
-    Expression test;
-    Statement body;
-
-    Loop (Expression t, Statement b) {
-        test = t; body = b;
+        return t;          
     }
-    public void display(int k) {
-        for (int w = 0; w < k; ++w) {
-            System.out.print("\t");
+  
+    private Statement statement() {
+        // Statement --> ; | Block | Assignment | IfStatement | WhileStatement
+        Statement s = null;
+        // student exercise
+        if (token.type().equals(TokenType.Semicolon))
+        s = new Skip();
+        else if (token.type().equals(TokenType.LeftBrace))
+        s = statements();
+        else if (token.type().equals(TokenType.If))
+        s = ifStatement();
+        else if (token.type().equals(TokenType.While))
+        s = whileStatement();
+        else if (token.type().equals(TokenType.Identifier))
+        s = assignment();
+        else error("Error in Statement construction");
+        return s;
+    }
+  
+    private Block statements () {
+        // Block --> '{' Statements '}'
+        // student exercise
+        Statement s;
+        Block b = new Block();
+        match(TokenType.LeftBrace);
+        while (isStatement()) {
+            s = statement();
+            b.members.add(s);
         }
+        match(TokenType.RightBrace);
+        return b;
     }
-    
-}
-
-abstract class Expression {
-    // Expression = Variable | Value | Binary | Unary
-    public void display(int k) {  
-        System.out.println("Display Expression Object");      
+  
+    private Assignment assignment () {
+        // Assignment --> Identifier = Expression ;
+        // student exercise
+        Expression source;
+        Variable target;
+        target = new Variable(match(TokenType.Identifier));
+        match(TokenType.Assign);
+        source = expression();
+        match(TokenType.Semicolon);
+        return new Assignment(target, source);
     }
-}
-
-class Variable extends Expression {
-    // Variable = String id
-    private String id;
-
-    Variable (String s) { id = s; }
-
-    public String toString( ) { return id; }
-    
-    public boolean equals (Object obj) {
-        String s = ((Variable) obj).id;
-        return id.equals(s); // case-sensitive identifiers
+  
+    private Conditional ifStatement () {
+        // IfStatement --> if ( Expression ) Statement [ else Statement ]
+        // student exercise
+        Conditional con;
+        Statement s;
+        Expression test;
+        match(TokenType.If);
+        match(TokenType.LeftParen);
+        test = expression();
+        match(TokenType.RightParen);
+        s = statement();
+        if (token.type().equals(TokenType.Else)) {
+            Statement elsestate = statement();
+            con = new Conditional(test, s, elsestate);
+        }
+        else {
+            con = new Conditional(test, s);
+        }
+        return con;
     }
-    public int hashCode ( ) { return id.hashCode( ); }
-    public void display(int k) {
-        System.out.print("\t");
-        System.out.println("Variable " + id);
-    }
-    
-}
-
-abstract class Value extends Expression {
-    // Value = IntValue | BoolValue |
-    //         CharValue | FloatValue
-    protected Type type;
-    protected boolean undef = true;
-
-    int intValue ( ) {
-        assert false : "should never reach here";
-        return 0;
-    }
-    
-    boolean boolValue ( ) {
-        assert false : "should never reach here";
-        return false;
-    }
-    
-    char charValue ( ) {
-        assert false : "should never reach here";
-        return ' ';
-    }
-    
-    float floatValue ( ) {
-        assert false : "should never reach here";
-        return 0.0f;
+  
+    private Loop whileStatement () {
+        // WhileStatement --> while ( Expression ) Statement
+        // student exercise
+        Statement body;
+        Expression test;
+        match(TokenType.While);
+        match(TokenType.LeftParen);
+        test = expression();
+        match(TokenType.RightParen);
+        body = statement();
+        return new Loop(test, body);
     }
 
-    boolean isUndef( ) { return undef; }
-
-    Type type ( ) { return type; }
-
-    static Value mkValue (Type type) {
-        if (type == Type.INT) return new IntValue( );
-        if (type == Type.BOOL) return new BoolValue( );
-        if (type == Type.CHAR) return new CharValue( );
-        if (type == Type.FLOAT) return new FloatValue( );
-        throw new IllegalArgumentException("Illegal type in mkValue");
+    private Expression expression () {
+        // Expression --> Conjunction { || Conjunction }
+        // student exercise
+        Expression c = conjunction();
+        while (token.type().equals(TokenType.Or)) {
+            Operator op = new Operator(match(token.type()));
+            Expression e = expression();
+            c = new Binary(op, c, e);
+        }
+        return c;
     }
-}
+  
+    private Expression conjunction () {
+        // Conjunction --> Equality { && Equality }
+        // student exercise
+        Expression eq = equality();
+        while (token.type().equals(TokenType.And)) {
+            Operator op = new Operator (match(token.type()));
+            Expression c = conjunction();
+            eq = new Binary(op, eq, c);
+        }
+        return eq;
+    }
+  
+    private Expression equality() {
+        // Equality --> Relation [ EquOp Relation ]
+        // student exercise
+        Expression rel = relation();
+        while (isEqualityOp()) {
+            Operator op = new Operator(match(token.type()));
+            Expression rel2 = relation();
+            rel = new Binary(op, rel, rel2);
+        }
+        return rel;
+    }
 
-class IntValue extends Value {
-    private int value = 0;
+    private Expression relation (){
+        // Relation --> Addition [RelOp Addition] 
+        // student exercise
+        Expression a = addition();
+        while (isRelationalOp()); {
+            Operator op = new Operator(match(token.type()));
+            Expression a2 = addition();
+            a = new Binary(op, a, a2);
+        }
+        return a;
+    }
+  
+    private Expression addition () {
+        // Addition --> Term { AddOp Term }
+        Expression e = term();
+        while (isAddOp()) {
+            Operator op = new Operator(match(token.type()));
+            Expression term2 = term();
+            e = new Binary(op, e, term2);
+        }
+        return e;
+    }
+  
+    private Expression term () {
+        // Term --> Factor { MultiplyOp Factor }
+        Expression e = factor();
+        while (isMultiplyOp()) {
+            Operator op = new Operator(match(token.type()));
+            Expression term2 = factor();
+            e = new Binary(op, e, term2);
+        }
+        return e;
+    }
+  
+    private Expression factor() {
+        // Factor --> [ UnaryOp ] Primary 
+        if (isUnaryOp()) {
+            Operator op = new Operator(match(token.type()));
+            Expression term = primary();
+            return new Unary(op, term);
+        }
+        else return primary();
+    }
+  
+    private Expression primary () {
+        // Primary --> Identifier | Literal | ( Expression )
+        //             | Type ( Expression )
+        Expression e = null;
+        if (token.type().equals(TokenType.Identifier)) {
+            e = new Variable(match(TokenType.Identifier));
+        } else if (isLiteral()) {
+            e = literal();
+        } else if (token.type().equals(TokenType.LeftParen)) {
+            token = lexer.next();
+            e = expression();       
+            match(TokenType.RightParen);
+        } else if (isType( )) {
+            Operator op = new Operator(match(token.type()));
+            match(TokenType.LeftParen);
+            Expression term = expression();
+            match(TokenType.RightParen);
+            e = new Unary(op, term);
+        } else error("Identifier | Literal | ( | Type");
+        return e;
+    }
 
-    IntValue ( ) { type = Type.INT; }
-
-    IntValue (int v) { this( ); value = v; undef = false; }
-
-    int intValue ( ) {
-        assert !undef : "reference to undefined int value";
+    private Value literal( ) {
+         // student exercise
+        Value value = null;
+        String stval = token.value();
+        if (token.type().equals(TokenType.IntLiteral)) {
+            value = new IntValue (Integer.parseInt(stval));
+            token = lexer.next();
+        }
+        else if (token.type().equals(TokenType.FloatLiteral)) {
+            value = new FloatValue(Float.parseFloat(stval));
+            token = lexer.next();
+        }
+        else if (token.type().equals(TokenType.CharLiteral)) {
+            value = new CharValue(stval.charAt(0));
+            token = lexer.next();
+        }
+        else if (token.type().equals(TokenType.True)) {
+            value = new BoolValue(true);
+            token = lexer.next();
+        }
+        else if (token.type().equals(TokenType.False)) {
+            value = new BoolValue(false);
+            token = lexer.next();
+        }
+        else error ("construction error");
         return value;
     }
 
-    public String toString( ) {
-        if (undef)  return "undef";
-        return "" + value;
-    }
-    public void display(int k) {
-        for (int w = 0; w < k; ++w) {
-            System.out.print("\t");
-        }
-        System.out.print("Int: ");
-        System.out.println(value);
-    }
-}
-
-class BoolValue extends Value {
-    private boolean value = false;
-
-    BoolValue ( ) { type = Type.BOOL; }
-
-    BoolValue (boolean v) { this( ); value = v; undef = false; }
-
-    boolean boolValue ( ) {
-        assert !undef : "reference to undefined bool value";
-        return value;
+    private boolean isBooleanOp() {
+        return token.type().equals(TokenType.And) ||
+        token.type().equals(TokenType.Or);
     }
 
-    int intValue ( ) {
-        assert !undef : "reference to undefined bool value";
-        return value ? 1 : 0;
+    private boolean isComma( ) {
+        return token.type().equals(TokenType.Comma);
     }
 
-    public String toString( ) {
-        if (undef)  return "undef";
-        return "" + value;
-    }   
-    public void display(int k) {
-        for (int w = 0; w < k; ++w) {
-            System.out.print("\t");
-        }
-        System.out.print("BoolValue: ");
-        System.out.println(value);
-    }
-}
-
-class CharValue extends Value {
-    private char value = ' ';
-
-    CharValue ( ) { type = Type.CHAR; }
-
-    CharValue (char v) { this( ); value = v; undef = false; }
-
-    char charValue ( ) {
-        assert !undef : "reference to undefined char value";
-        return value;
+    private boolean isSemicolon( ) {
+        return token.type().equals(TokenType.Semicolon);
     }
 
-    public String toString( ) {
-        if (undef)  return "undef";
-        return "" + value;
-    }
-    public void display(int k) {
-        for (int w = 0; w < k; ++w) {
-            System.out.print("\t");
-        }
-        System.out.print("CharValue: ");
-        System.out.println(value);
-    }
-}
-
-class FloatValue extends Value {
-    private float value = 0;
-
-    FloatValue ( ) { type = Type.FLOAT; }
-
-    FloatValue (float v) { this( ); value = v; undef = false; }
-
-    float floatValue ( ) {
-        assert !undef : "reference to undefined float value";
-        return value;
+    private boolean isLeftBrace() {
+        return token.type().equals(TokenType.LeftBrace);
     }
 
-    public String toString( ) {
-        if (undef)  return "undef";
-        return "" + value;
+    private boolean isRightBrace() {
+        return token.type().equals(TokenType.RightBrace);
     }
-    public void display(int k) {
-        for (int w = 0; w < k; ++w) {
-            System.out.print("\t");            
-        }
-        System.out.print("FloatValue: ");
-        System.out.println(value);
+
+    private boolean isStatement() {
+        return isSemicolon() ||
+        isLeftBrace() ||
+        token.type().equals(TokenType.If) ||
+        token.type().equals(TokenType.While) ||
+        token.type().equals(TokenType.Identifier);
     }
-}
-
-class Binary extends Expression {
-// Binary = Operator op; Expression term1, term2
-    Operator op;
-    Expression term1, term2;
-
-    Binary (Operator o, Expression l, Expression r) {
-        op = o; term1 = l; term2 = r;
-    } // binary
-    public void display(int k) {
-        for (int w = 0; w < k; ++w) {
-            System.out.print("\t");
-        }
-        System.out.print("Binary: ");
-        op.display(++k);
-        term1.display(k);
-        term2.display(k);
+  
+    private boolean isAddOp( ) {
+        return token.type().equals(TokenType.Plus) ||
+               token.type().equals(TokenType.Minus);
     }
-    public String toString() {
-        return ("Binary: op="+op+" term1="+term1+" term2="+term2);
-    }
-}
-
-class Unary extends Expression {
-    // Unary = Operator op; Expression term
-    Operator op;
-    Expression term;
-
-    Unary (Operator o, Expression e) {
-        op = o; term = e;
-    } // unary
-    public void display(int k) {
-        for (int w = 0; w < k; ++w) {
-            System.out.print("\t");
-        }
-        System.out.print("Unary: ");
-        op.display(++k);
-        term.display(k);
-    }
-}
-
-class Operator {
-    // Operator = BooleanOp | RelationalOp | ArithmeticOp | UnaryOp
-    // BooleanOp = && | ||
-    final static String AND = "&&";
-    final static String OR = "||";
-    // RelationalOp = < | <= | == | != | >= | >
-    final static String LT = "<";
-    final static String LE = "<=";
-    final static String EQ = "==";
-    final static String NE = "!=";
-    final static String GT = ">";
-    final static String GE = ">=";
-    // ArithmeticOp = + | - | * | /
-    final static String PLUS = "+";
-    final static String MINUS = "-";
-    final static String TIMES = "*";
-    final static String DIV = "/";
-    // UnaryOp = !    
-    final static String NOT = "!";
-    final static String NEG = "-";
-    // CastOp = int | float | char
-    final static String INT = "int";
-    final static String FLOAT = "float";
-    final static String CHAR = "char";
-    // Typed Operators
-    // RelationalOp = < | <= | == | != | >= | >
-    final static String INT_LT = "INT<";
-    final static String INT_LE = "INT<=";
-    final static String INT_EQ = "INT==";
-    final static String INT_NE = "INT!=";
-    final static String INT_GT = "INT>";
-    final static String INT_GE = "INT>=";
-    // ArithmeticOp = + | - | * | /
-    final static String INT_PLUS = "INT+";
-    final static String INT_MINUS = "INT-";
-    final static String INT_TIMES = "INT*";
-    final static String INT_DIV = "INT/";
-    // UnaryOp = !    
-    final static String INT_NEG = "-";
-    // RelationalOp = < | <= | == | != | >= | >
-    final static String FLOAT_LT = "FLOAT<";
-    final static String FLOAT_LE = "FLOAT<=";
-    final static String FLOAT_EQ = "FLOAT==";
-    final static String FLOAT_NE = "FLOAT!=";
-    final static String FLOAT_GT = "FLOAT>";
-    final static String FLOAT_GE = "FLOAT>=";
-    // ArithmeticOp = + | - | * | /
-    final static String FLOAT_PLUS = "FLOAT+";
-    final static String FLOAT_MINUS = "FLOAT-";
-    final static String FLOAT_TIMES = "FLOAT*";
-    final static String FLOAT_DIV = "FLOAT/";
-    // UnaryOp = !    
-    final static String FLOAT_NEG = "-";
-    // RelationalOp = < | <= | == | != | >= | >
-    final static String CHAR_LT = "CHAR<";
-    final static String CHAR_LE = "CHAR<=";
-    final static String CHAR_EQ = "CHAR==";
-    final static String CHAR_NE = "CHAR!=";
-    final static String CHAR_GT = "CHAR>";
-    final static String CHAR_GE = "CHAR>=";
-    // RelationalOp = < | <= | == | != | >= | >
-    final static String BOOL_LT = "BOOL<";
-    final static String BOOL_LE = "BOOL<=";
-    final static String BOOL_EQ = "BOOL==";
-    final static String BOOL_NE = "BOOL!=";
-    final static String BOOL_GT = "BOOL>";
-    final static String BOOL_GE = "BOOL>=";
-    // Type specific cast
-    final static String I2F = "I2F";
-    final static String F2I = "F2I";
-    final static String C2I = "C2I";
-    final static String I2C = "I2C";
     
-    String val;
+    private boolean isMultiplyOp( ) {
+        return token.type().equals(TokenType.Multiply) ||
+               token.type().equals(TokenType.Divide);
+    }
     
-    Operator (String s) { val = s; }
-
-    public String toString( ) { return val; }
-    public boolean equals(Object obj) { return val.equals(obj); }
+    private boolean isUnaryOp( ) {
+        return token.type().equals(TokenType.Not) ||
+               token.type().equals(TokenType.Minus);
+    }
     
-    boolean BooleanOp ( ) { return val.equals(AND) || val.equals(OR); }
-    boolean RelationalOp ( ) {
-        return val.equals(LT) || val.equals(LE) || val.equals(EQ)
-            || val.equals(NE) || val.equals(GT) || val.equals(GE);
+    private boolean isEqualityOp( ) {
+        return token.type().equals(TokenType.Equals) ||
+            token.type().equals(TokenType.NotEqual);
     }
-    boolean ArithmeticOp ( ) {
-        return val.equals(PLUS) || val.equals(MINUS)
-            || val.equals(TIMES) || val.equals(DIV);
+    
+    private boolean isRelationalOp( ) {
+        return token.type().equals(TokenType.Less) ||
+               token.type().equals(TokenType.LessEqual) || 
+               token.type().equals(TokenType.Greater) ||
+               token.type().equals(TokenType.GreaterEqual);
     }
-    boolean NotOp ( ) { return val.equals(NOT) ; }
-    boolean NegateOp ( ) { return val.equals(NEG) ; }
-    boolean intOp ( ) { return val.equals(INT); }
-    boolean floatOp ( ) { return val.equals(FLOAT); }
-    boolean charOp ( ) { return val.equals(CHAR); }
-
-    final static String intMap[ ] [ ] = {
-        {PLUS, INT_PLUS}, {MINUS, INT_MINUS},
-        {TIMES, INT_TIMES}, {DIV, INT_DIV},
-        {EQ, INT_EQ}, {NE, INT_NE}, {LT, INT_LT},
-        {LE, INT_LE}, {GT, INT_GT}, {GE, INT_GE},
-        {NEG, INT_NEG}, {FLOAT, I2F}, {CHAR, I2C}
-    };
-
-    final static String floatMap[ ] [ ] = {
-        {PLUS, FLOAT_PLUS}, {MINUS, FLOAT_MINUS},
-        {TIMES, FLOAT_TIMES}, {DIV, FLOAT_DIV},
-        {EQ, FLOAT_EQ}, {NE, FLOAT_NE}, {LT, FLOAT_LT},
-        {LE, FLOAT_LE}, {GT, FLOAT_GT}, {GE, FLOAT_GE},
-        {NEG, FLOAT_NEG}, {INT, F2I}
-    };
-
-    final static String charMap[ ] [ ] = {
-        {EQ, CHAR_EQ}, {NE, CHAR_NE}, {LT, CHAR_LT},
-        {LE, CHAR_LE}, {GT, CHAR_GT}, {GE, CHAR_GE},
-        {INT, C2I}
-    };
-
-    final static String boolMap[ ] [ ] = {
-        {EQ, BOOL_EQ}, {NE, BOOL_NE}, {LT, BOOL_LT},
-        {LE, BOOL_LE}, {GT, BOOL_GT}, {GE, BOOL_GE},
-    };
-
-    final static private Operator map (String[][] tmap, String op) {
-        for (int i = 0; i < tmap.length; i++)
-            if (tmap[i][0].equals(op))
-                return new Operator(tmap[i][1]);
-        assert false : "should never reach here";
-        return null;
+    
+    private boolean isType( ) {
+        return token.type().equals(TokenType.Int)
+            || token.type().equals(TokenType.Bool) 
+            || token.type().equals(TokenType.Float)
+            || token.type().equals(TokenType.Char);
     }
-
-    final static public Operator intMap (String op) {
-        return map (intMap, op);
+    
+    private boolean isLiteral( ) {
+        return token.type().equals(TokenType.IntLiteral) ||
+            isBooleanLiteral() ||
+            token.type().equals(TokenType.FloatLiteral) ||
+            token.type().equals(TokenType.CharLiteral);
     }
-
-    final static public Operator floatMap (String op) {
-        return map (floatMap, op);
+    
+    private boolean isBooleanLiteral( ) {
+        return token.type().equals(TokenType.True) ||
+            token.type().equals(TokenType.False);
     }
+    
+    public static void main(String args[]) {
+        Parser parser  = new Parser(new Lexer(args[0]));
+        Program prog = parser.program();
+        prog.display(0);           // display abstract syntax tree
+    } //main
 
-    final static public Operator charMap (String op) {
-        return map (charMap, op);
-    }
-
-    final static public Operator boolMap (String op) {
-        return map (boolMap, op);
-    }
-
-}
+} // Parser
