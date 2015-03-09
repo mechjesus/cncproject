@@ -41,11 +41,11 @@ public class Parser {
                           TokenType.LeftParen, TokenType.RightParen};
         for (int i=0; i<header.length; i++)   // bypass "int main ( )"
             match(header[i]);
-        match(TokenType.LeftBrace);
+        //match(TokenType.LeftBrace);
         // student exercise
         Declarations decs = declarations();
         Block b = statements();
-        match(TokenType.RightBrace);
+        //match(TokenType.RightBrace);
         return new Program(decs, b);  // student exercise
     }
   
@@ -126,7 +126,7 @@ public class Parser {
             s = statement();
             b.members.add(s);
         }
-        match(TokenType.RightBrace);
+        //match(TokenType.RightBrace);
         return b;
     }
   
