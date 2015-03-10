@@ -64,6 +64,10 @@ public class Lexer {
             case ' ': case '\t': case '\r': case eolnCh:
                 ch = nextChar();
                 break;
+                
+            case '*':
+                ch = nextChar();
+                return Token.multiplyTok;
             
             case '/':  // divide or comment
                 ch = nextChar();
@@ -89,51 +93,48 @@ public class Lexer {
             case '-': ch = nextChar();
                 return Token.minusTok;
                 
-            case '*': ch = nextChar();
-                return Token.multiplyTok;
-                
-            case ',': ch = nextChar();
-                return Token.commaTok;
-                
             case ';': ch = nextChar();
                 return Token.semicolonTok;
                 
-            case '(': ch = nextChar();
-                return Token.leftParenTok;
-                
-            case ')': ch = nextChar();
-                return Token.rightParenTok;
-                
-            case '{': ch = nextChar();
-                return Token.leftBraceTok;
-                
-            case '}': ch = nextChar();
-                return Token.rightBraceTok;
+            case ',': ch = nextChar();
+                return Token.commaTok;
 
-                // - * ( ) { } ; ,  student exercise
+            case '(': ch = nextChar();
+		return Token.leftParenTok;
+		
+	    case ')': ch = nextChar();
+		return Token.rightParenTok;
+		
+	    case '{': ch = nextChar();
+		return Token.leftBraceTok;
+	
+	    case '}': ch = nextChar();
+	        return Token.rightBraceTok;
+	        
+	    case '[': ch = nextChar();
+	        return Token.leftBracketTok;	
+	    
+	    case ']': ch = nextChar();
+	        return Token.rightBracketTok;
                 
             case '&': check('&'); return Token.andTok;
             case '|': check('|'); return Token.orTok;
 
             case '=':
-                return chkOpt('=', Token.assignTok,
-                                   Token.eqeqTok);
-            case '<':
-                return chkOpt('<', Token.ltTok,
-                                    Token.lteqTok);
-                                    
-            case '>':
-                return chkOpt('>', Token.gtTok,
-                                    Token.gteqTok);
-                                    
-            case '!':
-                return chkOpt('!', Token.notTok,
-                                    Token.noteqTok);
-            
-            
+                return chkOpt('=', Token.eqeqTok,
+                                   Token.assignTok);
                                    
-           
-                // < > !  student exercise 
+            case '<':
+                return chkOpt('=', Token.lteqTok,
+                                   Token.ltTok);
+                                   
+            case '>':
+                return chkOpt('=', Token.gteqTok,
+                                   Token.gtTok);
+                                   
+            case '!':
+                return chkOpt('=', Token.noteqTok,
+                                   Token.notTok);
 
             default:  error("Illegal character " + ch); 
             } // switch
@@ -146,7 +147,7 @@ public class Lexer {
     }
   
     private boolean isDigit(char c) {
-        return (c>='0' && c<='9' );  // student exercise
+        return (c >= '0' && c <= '9');
     }
 
     private void check(char c) {
@@ -157,14 +158,12 @@ public class Lexer {
     }
 
     private Token chkOpt(char c, Token one, Token two) {
-        ch = nextChar();// student exercise
-        if (ch == c) {
-            ch = nextChar();
-            return two;
+        ch = nextChar();
+        if (ch == c){
+          ch = nextChar();
+          return one;
         }
-        else {
-                return one;
-        }
+        return two;
     }
 
     private String concat(String set) {
@@ -190,5 +189,4 @@ public class Lexer {
             tok = lexer.next( );
         } 
     } // main
-
 }
